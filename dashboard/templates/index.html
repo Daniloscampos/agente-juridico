@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Peres e Javarotti — Agente IA | Central de Operações</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --azul-escuro: #0a1929;
+      --azul-medio: #1a3a5c;
+      --azul-destaque: #2563eb;
+      --azul-claro: #60a5fa;
+      --dourado: #b8935a;
+      --dourado-claro: #d4b27a;
+      --cinza-texto: #cbd5e1;
+      --cinza-suave: #94a3b8;
+      --verde: #10b981;
+      --vermelho: #ef4444;
+      --amarelo: #f59e0b;
+      --branco: #f8fafc;
+      --borda: #1e293b;
+      --fundo-card: #0f1e30;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0a1929 0%, #0f1e30 100%);
+      color: var(--branco);
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--borda);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--azul-medio), var(--azul-destaque));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--branco);
+      letter-spacing: -1px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      color: var(--branco);
+    }
+
+    .brand-text p {
+      font-size: 0.8rem;
+      color: var(--cinza-suave);
+      margin-top: 0.2rem;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-divider {
+      height: 30px;
+      width: 1px;
+      background: var(--borda);
+      margin: 0 0.5rem;
+    }
+
+    .brand-agent {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--dourado);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    /* STATUS */
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--verde);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .status-pill.pausado { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); }
+    .status-pill.pausado .status-dot { background: var(--amarelo); animation: none; }
+
+    .status-pill.parado { background: rgba(148, 163, 184, 0.1); border-color: rgba(148, 163, 184, 0.3); }
+    .status-pill.parado .status-dot { background: var(--cinza-suave); animation: none; }
+
+    /* CARDS KPI */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+      background: var(--fundo-card);
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--azul-medio);
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--azul-destaque);
+    }
+
+    .kpi-card.verde::before { background: var(--verde); }
+    .kpi-card.vermelho::before { background: var(--vermelho); }
+    .kpi-card.dourado::before { background: var(--dourado); }
+
+    .kpi-label {
+      font-size: 0.75rem;
+      color: var(--cinza-suave);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+    }
+
+    .kpi-value {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      color: var(--branco);
+      line-height: 1;
+    }
+
+    .kpi-card.verde .kpi-value { color: var(--verde); }
+    .kpi-card.vermelho .kpi-value { color: var(--vermelho); }
+    .kpi-card.dourado .kpi-value { color: var(--dourado-claro); }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--cinza-suave);
+      margin-top: 0.5rem;
+    }
+
+    /* BOTÕES */
+    .actions {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.3rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-pausar {
+      background: linear-gradient(135deg, var(--azul-medio), var(--azul-destaque));
+      color: var(--branco);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-pausar:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-secundario {
+      background: transparent;
+      color: var(--cinza-texto);
+      border: 1px solid var(--borda);
+    }
+
+    .btn-secundario:hover {
+      border-color: var(--azul-medio);
+      color: var(--branco);
+    }
+
+    /* TABELA */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--branco);
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 18px;
+      background: var(--dourado);
+      border-radius: 2px;
+    }
+
+    .table-wrapper {
+      background: var(--fundo-card);
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    thead {
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--cinza-suave);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+      color: var(--cinza-texto);
+      vertical-align: middle;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 30, 48, 0.4);
+    }
+
+    tbody tr:hover {
+      background: rgba(37, 99, 235, 0.05);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-sucesso {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--verde);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-erro {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--vermelho);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-aguardando {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amarelo);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      padding: 4rem 2rem;
+      text-align: center;
+      color: var(--cinza-suave);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-title {
+      font-size: 1rem;
+      color: var(--cinza-texto);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .empty-text {
+      font-size: 0.85rem;
+      color: var(--cinza-suave);
+    }
+
+    /* FOOTER */
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--borda);
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--cinza-suave);
+      letter-spacing: 0.5px;
+    }
+
+    footer a {
+      color: var(--dourado);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+      body { padding: 1rem; }
+      .brand-text h1 { font-size: 1.1rem; }
+      .brand-logo { width: 40px; height: 40px; font-size: 1rem; }
+      .kpi-value { font-size: 1.6rem; }
+      th, td { padding: 0.6rem; font-size: 0.75rem; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- HEADER -->
+    <header>
+      <div class="brand">
+        <div class="brand-logo">PJ</div>
+        <div class="brand-text">
+          <h1>Peres e Javarotti Advogados</h1>
+          <p>Desde 2014 · Advocacia Preventiva e Compliance Empresarial</p>
+        </div>
+        <div class="brand-divider"></div>
+        <div class="brand-agent">Agente IA · Central de Operações</div>
+      </div>
+            <div class="status-pill {{ 'pausado' if status == 'pausado' else 'operando' }}" id="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">{{ 'Pausado' if status == 'pausado' else 'Operando' }}</span>
+      </div>
+    </header>
+
+    <!-- CARDS KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total de Execuções</div>
+        <div class="kpi-value">{{ total }}</div>
+        <div class="kpi-sub">Tarefas processadas pelo agente</div>
+      </div>
+      <div class="kpi-card verde">
+        <div class="kpi-label">Concluídas</div>
+        <div class="kpi-value">{{ concluidas }}</div>
+        <div class="kpi-sub">Executadas com sucesso</div>
+      </div>
+      <div class="kpi-card vermelho">
+        <div class="kpi-label">Erros</div>
+        <div class="kpi-value">{{ erros }}</div>
+        <div class="kpi-sub">Requerem atenção</div>
+      </div>
+      <div class="kpi-card dourado">
+        <div class="kpi-label">Tempo Médio</div>
+        <div class="kpi-value">—</div>
+        <div class="kpi-sub">Por tarefa (em breve)</div>
+      </div>
+    </div>
+
+    <!-- AÇÕES -->
+        <!-- AÇÕES -->
+    <div class="actions">
+      {% if status == 'pausado' %}
+        <button class="btn btn-pausar" onclick="retomarAgente()">
+          <span>▶</span> Retomar Agente
+        </button>
+      {% else %}
+        <button class="btn btn-pausar" onclick="pausarAgente()">
+          <span>⏸</span> Pausar Agente
+        </button>
+      {% endif %}
+      <button class="btn btn-secundario" onclick="location.reload()">
+        <span>↻</span> Atualizar
+      </button>
+    </div>
+
+    <!-- TABELA -->
+    <div class="section-title">Atividade Recente</div>
+    <div class="table-wrapper">
+      {% if execucoes and execucoes|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Processo</th>
+            <th>Tarefa</th>
+            <th>Ação</th>
+            <th>Resultado</th>
+            <th>Arquivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in execucoes %}
+          <tr>
+            <td>{{ e.data_hora.strftime('%d/%m/%Y %H:%M') if e.data_hora else '—' }}</td>
+            <td>{{ e.processo or '—' }}</td>
+            <td>{{ e.tarefa or '—' }}</td>
+            <td>{{ e.acao or '—' }}</td>
+            <td>
+              {% if e.resultado == 'sucesso' %}
+                <span class="badge badge-sucesso">✓ Sucesso</span>
+              {% elif e.resultado == 'erro' %}
+                <span class="badge badge-erro">✗ Erro</span>
+              {% else %}
+                <span class="badge badge-aguardando">{{ e.resultado or 'Aguardando' }}</span>
+              {% endif %}
+            </td>
+            <td>{{ e.arquivo_gerado or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Nenhuma execução ainda</div>
+        <div class="empty-text">
+          O agente está aguardando tarefas no INTEGRA.<br>
+          Assim que uma tarefa for processada, ela aparecerá aqui.
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      Peres e Javarotti Advogados · <a href="https://pejadv.com.br" target="_blank">pejadv.com.br</a> ·
+      Agente Operacional Jurídico com IA · v1.0
+    </footer>
+
+  </div>
+
+  <script>
+        function pausarAgente() {
+      fetch('/pausar', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          location.reload();
+        })
+        .catch(err => alert('Erro ao pausar: ' + err));
+    }
+
+    function retomarAgente() {
+      fetch('/retomar', { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+          location.reload();
+        })
+        .catch(err => alert('Erro ao retomar: ' + err));
+    }
+  </script>
+</body>
+</html>

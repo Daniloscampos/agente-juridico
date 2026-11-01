@@ -35,3 +35,9 @@ __pycache__/
 debug/
 .browser/
 
+
+# copias antigas / temporarios
+*.bak
+*.bak-*
+Atualizacao_OpenAI_ElevenLabs/
+.pytest_cache/
